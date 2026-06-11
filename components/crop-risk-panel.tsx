@@ -82,8 +82,13 @@ export function CropRiskPanel({ crop, variety, days }: CropRiskPanelProps) {
   );
 
   const today = todayIso();
-  const minDate = shiftDays(today, -400);
-  const maxDate = shiftDays(today, 150);
+  // Only allow planting dates where the crop is still growing during the
+  // 15-day forecast window, so every selectable date produces a real score:
+  //   - earliest: cycleDays-1 days ago (today is the crop's last living day)
+  //   - latest: the last forecast day (plant now → germination shows in window)
+  const FORECAST_WINDOW_DAYS = 15;
+  const minDate = shiftDays(today, -(variety.cycleDays - 1));
+  const maxDate = shiftDays(today, FORECAST_WINDOW_DAYS - 1);
 
   return (
     <div className="space-y-4">
@@ -179,6 +184,10 @@ export function CropRiskPanel({ crop, variety, days }: CropRiskPanelProps) {
             );
           })}
         </div>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+          เลือกได้เฉพาะช่วงที่ {crop.nameTh} ยังอยู่ในรอบเพาะปลูกและตรงกับพยากรณ์ 15 วันข้างหน้า
+          (ระบบประเมินจากอากาศที่พยากรณ์ได้เท่านั้น ไม่ใช่อากาศย้อนหลัง)
+        </p>
       </div>
 
       {/* Stages visible in the forecast window */}
